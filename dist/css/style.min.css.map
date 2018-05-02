@@ -1,0 +1,1 @@
+{"version":3,"sources":["style.scss","base/variables.scss"],"names":[],"mappings":"AAEA;EACE,WCDO;EDEP,iBCHO,EDKR;;AAED;EACE,mCAA0B;EAA1B,2BAA0B,EAC3B","file":"style.min.css","sourcesContent":["@import 'base/variables.scss';\n\nbody{\n  color: $btn;\n  background: $bg;\n\n}\n\na{\n  transition: all 320ms ease;\n}","$white: #fff;\n$bg: #333;\n$btn: red;"]}
