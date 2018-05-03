@@ -6,13 +6,23 @@ const autoprefixer = require('gulp-autoprefixer');
 const rename = require('gulp-rename');
 const sourcemaps = require('gulp-sourcemaps');
 
+const browserify = require('browserify');
+const babelify = require('babelify');
+const source = require('vinyl-source-stream');
+const uglify = require('gulp-uglify');
+const buffer = require('vinyl-buffer');
+
+
 const styleSrc = 'src/scss/style.scss';
 const styleDist = './dist/css/';
 const styleWatch = 'src/scss/**/*.scss';
 
-const jsSrc = 'src/js/main.js';
+const jsSrc = 'main.js';
+const jsFolder ="src/js";
 const jsDist = './dist/js/';
 const jsWatch = 'src/js/**/*.js';
+const jsFiles = [jsSrc];
+
 
 
 gulp.task('style', () => {
@@ -31,8 +41,21 @@ gulp.task('style', () => {
 });
 
 gulp.task('js', () =>{
-  gulp.src(jsSrc)
-    .pipe(gulp.dest(jsDist));
+ jsFiles.map((entry) => {
+
+  return browserify({
+    entries: [jsFolder + entry]    
+  })
+  .transform(babelify, {presets: ['env']})
+  .bundle()
+  .pipe(source(entry))
+  .pipe(rename({extname: '.min.js'}))
+  .pipe(buffer())
+  .pipe(sourcemaps.init({loadMaps: true}))
+  .pipe(uglify())
+  .pipe(sourcemaps.write('./'))
+  .pipe(gulp.dest(jsDist));
+ });
 });
 
 gulp.task('default', ['style', 'js']);
