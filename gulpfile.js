@@ -11,18 +11,29 @@ const babelify = require('babelify');
 const source = require('vinyl-source-stream');
 const uglify = require('gulp-uglify');
 const buffer = require('vinyl-buffer');
+const browsersync = require('browser-sync').create();
+const reload = browsersync.reload;
 
-
+const htmlWatch = '**/*.html';
 const styleSrc = 'src/scss/style.scss';
 const styleDist = './dist/css/';
 const styleWatch = 'src/scss/**/*.scss';
 
 const jsSrc = 'main.js';
-const jsFolder ="src/js";
+const jsFolder = 'src/js/';
 const jsDist = './dist/js/';
 const jsWatch = 'src/js/**/*.js';
 const jsFiles = [jsSrc];
 
+
+gulp.task('browser-sync', () => {
+  browsersync.init({
+    server: {
+      injectChanges: true,
+      baseDir: "./"
+    }
+  });
+});
 
 
 gulp.task('style', () => {
@@ -37,7 +48,8 @@ gulp.task('style', () => {
       }))
       .pipe(rename({suffix: '.min'}))
       .pipe(sourcemaps.write('./'))
-      .pipe(gulp.dest(styleDist));
+      .pipe(gulp.dest(styleDist))
+      .pipe(browsersync.stream());
 });
 
 gulp.task('js', () =>{
@@ -54,13 +66,20 @@ gulp.task('js', () =>{
   .pipe(sourcemaps.init({loadMaps: true}))
   .pipe(uglify())
   .pipe(sourcemaps.write('./'))
-  .pipe(gulp.dest(jsDist));
+  .pipe(gulp.dest(jsDist))
+  .pipe(browsersync.stream());
  });
+});
+
+gulp.task('html', () =>{
+  gulp.src(htmlSource)
+    .pipe(browsersync.stream());
 });
 
 gulp.task('default', ['style', 'js']);
 
-gulp.task('watch', ['default'], () => {
-  gulp.watch(styleWatch, ['style']);
-  gulp.watch(jsWatch, ['js']);
+gulp.task('watch', ['default', 'browser-sync'], () => {
+  gulp.watch(styleWatch, ['style', reload]);
+  gulp.watch(jsWatch, ['js', reload]);
+  gulp.watch(htmlWatch, reload);
 });
