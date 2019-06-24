@@ -1,129 +1,86 @@
-const gulp = require('gulp');
-const sass = require('gulp-sass');
-const autoprefixer = require('gulp-autoprefixer');
-const rename = require('gulp-rename');
-const sourcemaps = require('gulp-sourcemaps');
-const concat = require('gulp-concat');
+import gulp from 'gulp';
+import babel from 'gulp-babel';
+import sass from 'gulp-sass';
+import uglify from 'gulp-uglify';
+import concat from 'gulp-concat';
+import autoprefixer from 'gulp-autoprefixer';
+import clean from 'gulp-clean-css';
+import browserSync from 'browser-sync';
+import del from 'del';
 
-const browserify = require('browserify');
-const babel = require('gulp-babel');
-const source = require('vinyl-source-stream');
-const uglify = require('gulp-uglify');
-const buffer = require('vinyl-buffer');
-const browserSync = require('browser-sync').create();
-const reload = browserSync.reload;
-
-const htmlWatch = '**/*.html';
-const styleSrc = 'src/scss/style.scss';
-const styleDist = './dist/css/';
-const styleWatch = 'src/scss/**/*.scss';
-
-const jsSrc = 'main.js';
-const jsFolder = 'src/js/';
-const jsDist = './dist/js/';
-const jsWatch = 'src/js/**/*.js';
-const jsFiles = [jsSrc];
-
-const paths = {
-  styles: {
-    src: 'src/scss/**/*.scss',
-    dest: 'dist/css',
-  },
-
-  scripts: {
-    src: 'src/js/**/*.js',
-    dest: 'dist/js',
-  },
+const sync = browserSync.create();
+const reload = sync.reload;
+const config = {
+    paths: {
+        src: {
+            html: './src/**/*.html',
+            img: './src/img/**.*',
+            sass: ['src/sass/app.scss'],
+            js: [
+                'src/js/libs/vue.js',
+                'src/js/app.js',
+            ]
+        },
+        dist: {
+            main: './dist',
+            css: './dist/css',
+            js: './dist/js',
+            img: './dist/img'
+        }
+    }
 };
 
-function styles() {
-  return src(paths.styles.src)
-    .pipe(sourcemaps.init())
-    .pipe(sass())
-    .on('error', sass.logError)
-    .pipe(postcss([autoprefixer(), cssnano()]))
-    .pipe(sourcemaps.write('.'))
-    .pipe(dest(paths.styles.dest))
-    .pipe(browserSync.stream());
-}
+gulp.task('sass', () => {
+    return gulp.src(config.paths.src.sass)
+        .pipe(sass())
+        .pipe(autoprefixer({
+            browsers: ['last 2 versions']
+        }))
+        .pipe(clean())
+        .pipe(gulp.dest(config.paths.dist.css))
+        .pipe(sync.stream());
+});
 
-function scripts() {
-  return gulp
-    .src(paths.scripts.src, { sourcemaps: true })
-    .pipe(babel({ presets: ['@babel/preset-env'] }))
-    .pipe(uglify())
-    .pipe(concat('main.min.js'))
-    .pipe(gulp.dest(paths.scripts.dest))
-    .pipe(browserSync.stream());
-}
+gulp.task('js', () => {
+    gulp.src(config.paths.src.js)
+        .pipe(babel({ presets: ['env'] }))
+        .pipe(concat('app.js'))
+        .pipe(uglify())
+        .pipe(gulp.dest(config.paths.dist.js));
 
-function watch() {
-  browserSync.init({
-    server: {
-      baseDir: './',
-    },
-  });
+    reload();
+});
 
-  gulp.watch('src/scss/**/*.scss', styles);
-  gulp.watch('src/js/**/*.js', scripts);
-  gulp.watch('./*.html').on('change', browserSync.reload);
-}
+gulp.task('static', () => {
+    gulp.src(config.paths.src.html)
+        .pipe(gulp.dest(config.paths.dist.main));
 
-// gulp.task('browser-sync', () => {
-//   browsersync.init({
-//     server: {
-//       injectChanges: true,
-//       baseDir: './',
-//     },
-//   });
-// });
+    gulp.src(config.paths.src.img)
+        .pipe(gulp.dest(config.paths.dist.img));
 
-// gulp.task('style', () => {
-//   gulp
-//     .src(styleSrc)
-//     .pipe(sourcemaps.init())
-//     //return gulp.src(styleSrc)
-//     .pipe(sass().on('error', sass.logError))
-//     .pipe(
-//       autoprefixer({
-//         browsers: ['last 2 versions'],
-//         cascade: false,
-//       })
-//     )
-//     .pipe(rename({ suffix: '.min' }))
-//     .pipe(sourcemaps.write('./'))
-//     .pipe(gulp.dest(styleDist))
-//     .pipe(browsersync.stream());
-// });
+    reload();
+});
 
-// gulp.task('js', () => {
-//   jsFiles.map(entry => {
-//     return browserify({
-//       entries: [jsFolder + entry],
-//     })
-//       .transform(babelify, { presets: ['env'] })
-//       .bundle()
-//       .pipe(source(entry))
-//       .pipe(rename({ extname: '.min.js' }))
-//       .pipe(buffer())
-//       .pipe(sourcemaps.init({ loadMaps: true }))
-//       .pipe(uglify())
-//       .pipe(sourcemaps.write('./'))
-//       .pipe(gulp.dest(jsDist))
-//       .pipe(browsersync.stream());
-//   });
-// });
+gulp.task('clean', () => {
+    return del([config.paths.dist.main]);
+});
 
-// gulp.task('html', () => {
-//   gulp.src(htmlSource).pipe(browsersync.stream());
-// });
+gulp.task('build', ['clean'], function () {
+   gulp.start('sass', 'js', 'static');
+});
 
-// gulp.task('default', ['style', 'js']);
+gulp.task('server', () => {
+    sync.init({
+        injectChanges: true,
+        server: config.paths.dist.main
+    });
+});
 
-// gulp.task('watch', ['default', 'browser-sync'], () => {
-//   gulp.watch(styleWatch, ['style', reload]);
-//   gulp.watch(jsWatch, ['js', reload]);
-//   gulp.watch(htmlWatch, reload);
-// });
+gulp.task('watch', ['default'], function () {
+    gulp.watch('src/sass/app.scss', ['sass']);
+    gulp.watch('src/js/**/*.js', ['js']);
+    gulp.watch('src/*.html', ['static']);
+    gulp.start('server');
+});
 
-exports.watch = watch;
+gulp.task('default', ['build']);
