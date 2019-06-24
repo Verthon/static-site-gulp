@@ -1,6 +1,10 @@
 class App {
   constructor(){
-    console.log('class works');
+    
+  }
+
+  static hello(){
+    console.log('hello');
   }
 }
 

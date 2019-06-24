@@ -1,35 +1,28 @@
 {
   "name": "static-site-gulp-kit",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp",
+    "start": "gulp watch"
   },
-  "author": "Jurr",
-  "license": "MIT",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
+    "babel": "^6.23.0",
     "babel-core": "^6.26.3",
-    "babel-preset-env": "^1.6.1",
-    "babelify": "^8.0.0",
-    "browser-sync": "^2.24.3",
-    "browserify": "^16.2.0",
-    "gulp": "^3.9.1",
+    "babel-preset-env": "^1.7.0",
+    "browser-sync": "^2.24.4",
+    "del": "^3.0.0",
+    "gulp": "^3.9.0",
     "gulp-autoprefixer": "^5.0.0",
-    "gulp-rename": "^1.2.2",
+    "gulp-babel": "^7.0.1",
+    "gulp-clean-css": "^3.9.4",
+    "gulp-concat": "^2.6.1",
     "gulp-sass": "^4.0.1",
-    "gulp-sourcemaps": "^2.6.4",
-    "gulp-uglify": "^3.0.0",
-    "uglify-js": "^3.3.23",
-    "vinyl-buffer": "^1.0.1",
-    "vinyl-source-stream": "^2.0.0"
-  },
-  "dependencies": {
-    "node-sass": "^4.9.0"
-  },
-  "babel": {
-    "presets": [
-      "env"
-    ]
+    "gulp-uglify": "^3.0.0"
   }
 }

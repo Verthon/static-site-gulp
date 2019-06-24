@@ -1,2 +1,0 @@
-//comment
-console.log('test');
